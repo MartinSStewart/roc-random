@@ -10,7 +10,7 @@ interface Random
         finish,
         Seed,
         Generator,
-        run
+        generate
     ]
     imports []
 
@@ -25,14 +25,16 @@ i16 : I16, I16, (I16 -> Generator a) -> Generator a
 i16 = \low, high, func ->
     @Generator
         \(@Seed seed) ->
-            value = permute state |> mapToI16 |> Num.toI64 |> Num.sub (Num.toI64 Num.minI16) |> modWithNonzero range
+            range = high - low |> Num.toI64
+            value = permute (@Seed seed) |> mapToI16 |> Num.toI64 |> Num.sub (Num.toI64 Num.minI16) |> modWithNonzero range
             generate (nextSeed (@Seed seed)) (func (Num.intCast seed % (high - low) + low))
 
 i32 : I32, I32, (I32 -> Generator a) -> Generator a
 i32 = \low, high, func ->
     @Generator
         \(@Seed seed) ->
-            value = permute state |> mapToI32 |> Num.toI64 |> Num.sub (Num.toI64 Num.minI32) |> modWithNonzero range
+            range = high - low |> Num.toI64
+            value = permute (@Seed seed) |> mapToI32 |> Num.toI64 |> Num.sub (Num.toI64 Num.minI32) |> modWithNonzero range
             generate (nextSeed (@Seed seed)) (func (Num.intCast seed % (high - low) + low))
 
 #u8 : U8, U8, (U8 -> Generator a) -> Generator a
@@ -106,27 +108,30 @@ sort = \x, y ->
 
 mapToI8 : U64 -> I8
 mapToI8 = \x ->
+    x2 = Num.toU8 x
     middle = Num.toU8 Num.maxI8
-    if x <= middle then
+    if x2 <= middle then
         Num.minI8 + Num.toI8 x
     else
-        Num.toI8 (x - middle - 1)
+        Num.toI8 (x2 - middle - 1)
 
 mapToI16 : U64 -> I16
 mapToI16 = \x ->
+    x2 = Num.toU16 x
     middle = Num.toU16 Num.maxI16
-    if x <= middle then
+    if x2 <= middle then
         Num.minI16 + Num.toI16 x
     else
-        Num.toI16 (x - middle - 1)
+        Num.toI16 (x2 - middle - 1)
 
 mapToI32 : U64 -> I32
 mapToI32 = \x ->
+    x2 = Num.toU32 x
     middle = Num.toU32 Num.maxI32
-    if x <= middle then
+    if x2 <= middle then
         Num.minI32 + Num.toI32 x
     else
-        Num.toI32 (x - middle - 1)
+        Num.toI32 (x2 - middle - 1)
 
 # Warning: y must never equal 0. The `123` fallback is nonsense for typechecking only.
 modWithNonzero = \x, y -> x % y
